@@ -14,6 +14,7 @@ import pwd
 import grp
 import pprint
 import ssl
+import base64
 ssl._create_default_https_context = ssl._create_unverified_context
 
 BulkOpBuffer = ''
@@ -217,11 +218,11 @@ def get_type_permission(st_mode):
     return ftype, mode_str[1:]
 
 if __name__ == "__main__":
-    global EsUrl
-    global EsPort
-    global IndexName
-    global EsUser
-    global EsPassword
+    #global EsUrl
+    #global EsPort
+    #global IndexName
+    #global EsUser
+    #global EsPassword
     
     parser = argparse.ArgumentParser(description='Scan mount point and ingest file list to Elastic Search')
     requiredargs = parser.add_argument_group('required arguments')
@@ -256,8 +257,8 @@ if __name__ == "__main__":
             level=Logging_Level)
     
     init()
-    # total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(args.path, args.maxdepth)
-    total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(/zx, 10)
+    # total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size, total_file_number, total_dir_number, total_softlink_number = scan_and_update(args.path, args.maxdepth)
+    total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size, total_file_number, total_dir_number, total_softlink_number = scan_and_update('/zx/dirscan_for_elastic', 10)
 
     es_bulk_create()
 
