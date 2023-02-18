@@ -40,6 +40,7 @@ def init():
     global GID_list
     global Conn
     global SslContext
+    global PwStr
     
     pwd_list = pwd.getpwall()
     for p in pwd_list:
@@ -55,7 +56,7 @@ def init():
         logging.error("Failed to connect " + EsUrl + ":" + str(e))
         exit(255)
     
-    PwStr = base64.b64encode('{}:{}'.format(EsUser, EsPassword).encode())
+    PwStr = base64.b64encode('{}:{}'.format(EsUser, EsPassword).encode()).decode()
 
 def scan_and_update(path, maxdepth):
     global ToBeIgnoredList
