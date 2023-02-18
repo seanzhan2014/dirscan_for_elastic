@@ -64,58 +64,54 @@ def scan_and_update(path, maxdepth, smart_scan, is_changed):
     total_entry_size_including_subdir = 0
     total_entry_number = 0
     total_entry_size = 0
-    total_file_number = 0
-    total_dir_number = 0
-    total_softlink_number = 0
+
     d_total_entry_number_including_subdir = 0
     d_total_entry_size_including_subdir = 0
     d_total_entry_number = 0
     d_total_entry_size = 0
-    d_total_file_number = 0
-    d_total_dir_number = 0
-    d_total_softlink_number = 0
+
     maxdepth -= 1
     
     for entry in os.scandir(path):
         if (entry.name in ToBeIgnoredList):
             continue
+            
+        total_entry_number += 1        
+        total_entry_size = total_entry_size + entry_stat.st_size
+        if (not is_changed and not entry.is_dir())
+            continue
+
         try:
             entry_stat = entry.stat()
         except OSError as e:
             logging.warn("Failed to stat {} : {}".format(entry.path, str(e)))
             continue
+
         owner_name,group_name = get_name_by_id(entry_stat.st_uid, entry_stat.st_gid)
         ftype,permission = get_type_permission(entry_stat.st_mode)
         directory_path = get_directory_path(entry.path)
         ext = get_file_ext(entry.name)
         
         if (ftype == 'directory' and maxdepth > 0):
-            d_total_entry_number_including_subdir, d_total_entry_size_including_subdir, d_total_entry_number, d_total_entry_size, d_total_file_number, d_total_dir_number, d_total_softlink_number = scan_and_update(entry.path, maxdepth, smart_scan, check_dir(entry_stat.st_ino, entry_stat.st_mtime))
+            d_total_entry_number_including_subdir, d_total_entry_size_including_subdir, d_total_entry_number, d_total_entry_size = scan_and_update(entry.path, maxdepth, smart_scan, check_dir(entry_stat.st_ino, entry_stat.st_mtime))
+            
             total_entry_number_including_subdir = total_entry_number_including_subdir + d_total_entry_number_including_subdir
+            
             total_entry_size_including_subdir = total_entry_size_including_subdir + d_total_entry_size_including_subdir
         
-        total_entry_number += 1        
-        total_entry_size = total_entry_size + entry_stat.st_size
+
 
         db_total_entry_number_including_subdir = 0
         db_total_entry_size_including_subdir = 0
         db_total_entry_number = 0
         db_total_entry_size = 0
-        db_total_file_number = 0
-        db_total_dir_number = 0
-        db_total_softlink_number = 0
+
         if (ftype == 'directory'):
             total_dir_number +=1
             db_total_entry_number_including_subdir = d_total_entry_number_including_subdir
             db_total_entry_number = d_total_entry_number
             db_total_entry_size = d_total_entry_size
-            db_total_file_number = d_total_file_number
-            db_total_dir_number = d_total_dir_number
-            db_total_softlink_number = d_total_dir_number
-        if (ftype == 'softlink'):
-            total_softlink_number +=1
-        if (ftype == 'file'):
-            total_file_number +=1
+
 
         update_db(entry_stat.st_ino,{
             "name": entry.name,
@@ -123,11 +119,11 @@ def scan_and_update(path, maxdepth, smart_scan, is_changed):
             "path": entry.path,
             "directory_path": directory_path,
             "mtime": datetime.datetime.fromtimestamp(entry_stat.st_mtime).strftime('%Y-%m-%d'),
-            "st_mtime": entry_stat.st_mtime
+            "st_mtime": entry_stat.st_mtime,
             "atime": datetime.datetime.fromtimestamp(entry_stat.st_atime).strftime('%Y-%m-%d'),
-            "st_atime": entry_stat.st_atime
+            "st_atime": entry_stat.st_atime,
             "ctime": datetime.datetime.fromtimestamp(entry_stat.st_ctime).strftime('%Y-%m-%d'),
-            "st_ctime": entry_stat.st_ctime
+            "st_ctime": entry_stat.st_ctime,
             "uid": entry_stat.st_uid,
             "gid": entry_stat.st_gid,
             "owner": owner_name,
@@ -138,14 +134,11 @@ def scan_and_update(path, maxdepth, smart_scan, is_changed):
             "total_entry_number_including_subdir": db_total_entry_number_including_subdir,
             "total_entry_size_including_subdir": db_total_entry_size_including_subdir,
             "total_entry_number": db_total_entry_number,
-            "total_entry_size": db_total_entry_size,
-            "total_file_number": db_total_file_number,
-            "total_dir_number": db_total_dir_number,
-            "total_softlink_number": db_total_softlink_number
+            "total_entry_size": db_total_entry_size
             })
     total_entry_number_including_subdir = total_entry_number_including_subdir + total_entry_number
     total_entry_size_including_subdir = total_entry_size_including_subdir + total_entry_size
-    return total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size, total_file_number, total_dir_number, total_softlink_number
+    return total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size
 
 def check_dir(inode, mtime):
     return True
@@ -264,13 +257,9 @@ if __name__ == "__main__":
             level=Logging_Level)
     
     init()
-<<<<<<< HEAD
-    # total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(args.path, args.maxdepth)
-    total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(/zx, 10, True)
-=======
+
     # total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size, total_file_number, total_dir_number, total_softlink_number = scan_and_update(args.path, args.maxdepth)
-    total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size, total_file_number, total_dir_number, total_softlink_number = scan_and_update('/zx/dirscan_for_elastic', 10)
->>>>>>> e986e79209e2ad3bd23b12bfc73509715140bf5d
+    total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size = scan_and_update('/zx/test', 10, True, True)
 
     es_bulk_create()
 
