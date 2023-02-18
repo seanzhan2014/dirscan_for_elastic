@@ -14,6 +14,7 @@ import pwd
 import grp
 import pprint
 import ssl
+import base64
 ssl._create_default_https_context = ssl._create_unverified_context
 
 BulkOpBuffer = ''
@@ -39,6 +40,7 @@ def init():
     global GID_list
     global Conn
     global SslContext
+    global PwStr
     
     pwd_list = pwd.getpwall()
     for p in pwd_list:
@@ -54,7 +56,7 @@ def init():
         logging.error("Failed to connect " + EsUrl + ":" + str(e))
         exit(255)
     
-    PwStr = base64.b64encode('{}:{}'.format(EsUser, EsPassword).encode())
+    PwStr = base64.b64encode('{}:{}'.format(EsUser, EsPassword).encode()).decode()
 
 def scan_and_update(path, maxdepth, smart_scan, is_changed):
     global ToBeIgnoredList
@@ -223,11 +225,11 @@ def get_type_permission(st_mode):
     return ftype, mode_str[1:]
 
 if __name__ == "__main__":
-    global EsUrl
-    global EsPort
-    global IndexName
-    global EsUser
-    global EsPassword
+    #global EsUrl
+    #global EsPort
+    #global IndexName
+    #global EsUser
+    #global EsPassword
     
     parser = argparse.ArgumentParser(description='Scan mount point and ingest file list to Elastic Search')
     requiredargs = parser.add_argument_group('required arguments')
@@ -262,8 +264,13 @@ if __name__ == "__main__":
             level=Logging_Level)
     
     init()
+<<<<<<< HEAD
     # total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(args.path, args.maxdepth)
     total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(/zx, 10, True)
+=======
+    # total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size, total_file_number, total_dir_number, total_softlink_number = scan_and_update(args.path, args.maxdepth)
+    total_entry_number_including_subdir, total_entry_size_including_subdir, total_entry_number, total_entry_size, total_file_number, total_dir_number, total_softlink_number = scan_and_update('/zx/dirscan_for_elastic', 10)
+>>>>>>> e986e79209e2ad3bd23b12bfc73509715140bf5d
 
     es_bulk_create()
 
