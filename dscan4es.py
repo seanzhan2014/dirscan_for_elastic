@@ -23,21 +23,22 @@ ToBeIgnoredList = ['.snapshot']
 UID_list = {}
 GID_list = {}
 Conn = {}
-SSLConext = {}
+SslContext = {}
 
-es_url = "elasticsearch-6-122.isilon.com"
-es_port = "9200"
-index_name = "isilon2"
-bulk_url = "/" + index_name + "/_bulk/"
-pw_str = 'ZWxhc3RpYzpkMVZER3ZfUzk3WE5oRFdYbWRlbA=='
-logging_level = logging.WARN
-path = '/mnt/'
+EsUrl = "elasticsearch-6-122.isilon.com"
+EsPort = "9200"
+IndexName = "isilon1"
+EsUser = 'elastic'
+EsPassword = 'd1VDGv_S97XNhDWXmdel'
+
+PwStr = ''
+Logging_Level = logging.DEBUG
 
 def init():
     global UID_list
     global GID_list
     global Conn
-    global SSLConext
+    global SslContext
     
     pwd_list = pwd.getpwall()
     for p in pwd_list:
@@ -48,10 +49,12 @@ def init():
         GID_list[g.gr_gid] = g.gr_name
 
     try:
-        Conn = http.client.HTTPSConnection(es_url, es_port, timeout=60)
+        Conn = http.client.HTTPSConnection(EsUrl, EsPort, timeout=60)
     except http.client.HTTPException as e:
-        logging.error("Failed to connect " + es_url + ":" + str(e))
+        logging.error("Failed to connect " + EsUrl + ":" + str(e))
         exit(255)
+    
+    PwStr = base64.b64encode('{}:{}'.format(EsUser, EsPassword).encode())
 
 def scan_and_update(path, maxdepth):
     global ToBeIgnoredList
@@ -171,8 +174,11 @@ def es_bulk_create():
     global BulkOpBuffer
     global BulkOpBufferSize
     global Conn
+    global PwStr
     
-    headers = {'Authorization': 'Basic ' + pw_str, 'Content-Type': 'application/json'}
+    bulk_url = "/" + IndexName + "/_bulk/"
+        
+    headers = {'Authorization': 'Basic ' + PwStr, 'Content-Type': 'application/json'}
     Conn.request("POST", bulk_url, BulkOpBuffer, headers)
     res = Conn.getresponse()
     data = res.read()
@@ -211,31 +217,47 @@ def get_type_permission(st_mode):
     return ftype, mode_str[1:]
 
 if __name__ == "__main__":
+    global EsUrl
+    global EsPort
+    global IndexName
+    global EsUser
+    global EsPassword
+    
     parser = argparse.ArgumentParser(description='Scan mount point and ingest file list to Elastic Search')
-    # requiredargs = parser.add_argument_group('required arguments')
+    requiredargs = parser.add_argument_group('required arguments')
     # requiredargs.add_argument('--path', '-p', help='The path of mount point to be scanned', required=True)
     # requiredargs.add_argument('--es_url', '-e', help='The url of ES server.', required=True)
-    # requiredargs.add_argument('--es_port', '-p', help='The port of ES server.', required=True)
+    # requiredargs.add_argument('--es_port', '-o', help='The port of ES server.', required=True)
     # requiredargs.add_argument('--index', '-i', help='The index name.', required=True)
+    # requiredargs.add_argument('--maxdepth', '-m', help='The maximum level of directory to be scanned.', required=True)
+    # requiredargs.add_argument('--es_user', '-u', help='The ES user.', required=True)
+    # requiredargs.add_argument('--es_password', '-w', help='The ES password.', required=True)
     parser.add_argument('--log', '-l', help='The output log file name. Output to screen if not specified.')
+    
     args = parser.parse_args()
     log_file_name = args.log
+    # EsUrl = args.EsUrl
+    # EsPort = args.es_password
+    # IndexName = args.index
+    # EsUser = args.es_user
+    # EsPassword = args.es_password
 
     if (args.log is not None):
         logging.basicConfig(
             filename=args.log,
             format="%(asctime)s %(name)s:%(levelname)s:%(message)s",
             datefmt="%d-%m-%Y %H:%M:%S",
-            level=logging_level)
+            level=Logging_Level)
     else:
         logging.basicConfig(
             stream=sys.stdout,
             format="%(asctime)s %(name)s:%(levelname)s:%(message)s",
             datefmt="%d-%m-%Y %H:%M:%S",
-            level=logging_level)
+            level=Logging_Level)
     
     init()
-    total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(path,100)
+    # total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(args.path, args.maxdepth)
+    total_entry_number_including_subdir, total_entry_number, total_file_number, total_dir_number, total_softlink_number = scan_and_update(/zx, 10)
 
     es_bulk_create()
 
