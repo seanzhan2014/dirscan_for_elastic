@@ -72,10 +72,22 @@ def scan_and_update(path, maxdepth, smart_scan, is_changed):
         if (entry.name in ToBeIgnoredList):
             continue
             
-        total_entry_number += 1        
-        if (not is_changed and not entry.is_dir()):
+        total_entry_number += 1
+        
+        if (entry.is_dir()):
+            try:
+                entry_stat = entry.stat()
+            except OSError as e:
+                logging.warn("Failed to stat {} : {}".format(entry.path, str(e)))
+                continue
+            if (is_changed):
+                refresh_dir_info()
+                scan_and_update(
+        
+        else:
+        if (not is_changed):
             continue
-
+        
         try:
             entry_stat = entry.stat()
         except OSError as e:
@@ -92,12 +104,10 @@ def scan_and_update(path, maxdepth, smart_scan, is_changed):
             
             total_entry_number_including_subdir = total_entry_number_including_subdir + d_total_entry_number_including_subdir
 
-
         db_total_entry_number_including_subdir = 0
         db_total_entry_number = 0
 
         if (ftype == 'directory'):
-            total_dir_number +=1
             db_total_entry_number_including_subdir = d_total_entry_number_including_subdir
             db_total_entry_number = d_total_entry_number
 
@@ -124,6 +134,8 @@ def scan_and_update(path, maxdepth, smart_scan, is_changed):
             })
     total_entry_number_including_subdir = total_entry_number_including_subdir + total_entry_number
     return total_entry_number_including_subdir, total_entry_number
+
+def refresh_dir_info():
 
 def check_dir(inode, mtime):
     return True
